@@ -1,4 +1,4 @@
-const API_URL = "https://ProyectodeGradoAPI.onrender.com"; // Cambia según tu Render
+const API_URL = "https://proyectodegradoapi.onrender.com"; // tu URL de Render
 
 async function actualizar() {
   const res = await fetch(`${API_URL}/get`);
