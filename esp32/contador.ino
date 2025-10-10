@@ -3,7 +3,7 @@
 
 const char* ssid = "TU_WIFI";
 const char* password = "TU_CONTRASEÑA";
-const char* serverURL = "https://ProyectodeGradoAPI.onrender.com/add";
+const char* serverURL = "https://proyectodegradoapi.onrender.com/add";
 
 void setup() {
   Serial.begin(115200);
