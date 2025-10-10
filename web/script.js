@@ -17,4 +17,3 @@ setInterval(actualizar, 3000);
 
 // Primera actualización al cargar la página
 actualizar();
-r();
