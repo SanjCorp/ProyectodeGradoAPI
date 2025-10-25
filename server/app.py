@@ -3,30 +3,30 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 import os
 
-app = Flask(__name__, static_folder="web")  # carpeta donde están index.html y script.js
+app = Flask(__name__, static_folder="../web")  # carpeta donde está index.html
 CORS(app)
 
-# Configuración de MongoDB
+# Conexión a MongoDB
 app.config["MONGO_URI"] = "mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/contadorDB?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
-# Ruta de la API
+# API para ESP32
 @app.route('/data', methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
-        data = request.get_json()
-        mongo.db.contador.insert_one(data)
+        dato = request.get_json()
+        mongo.db.contador.insert_one(dato)
         return jsonify({"message": "Dato recibido"}), 201
     else:  # GET
         datos = list(mongo.db.contador.find({}, {"_id": 0}))
         return jsonify(datos)
 
-# Servir index.html
+# Ruta para servir HTML
 @app.route('/')
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
-# Servir otros archivos estáticos (JS, CSS)
+# Rutas para otros archivos estáticos (JS, CSS)
 @app.route('/<path:path>')
 def static_proxy(path):
     return send_from_directory(app.static_folder, path)
