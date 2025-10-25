@@ -1,16 +1,14 @@
-async function actualizar() {
-  const contadorElem = document.getElementById("contador");
-  contadorElem.textContent = "Cargando...";
+const API_URL = ""; // vacío porque está en el mismo dominio (Render)
 
+async function actualizar() {
   try {
     const res = await fetch("/contador");
-    if (!res.ok) throw new Error("Error en la respuesta del servidor");
     const data = await res.json();
     const ultimo = data.length > 0 ? data[data.length - 1].pulsos : 0;
-    contadorElem.textContent = ultimo;
+    document.getElementById("contador").textContent = ultimo;
   } catch (err) {
     console.error(err);
-    contadorElem.textContent = "Error al cargar";
+    document.getElementById("contador").textContent = "Error";
   }
 }
 
