@@ -1,27 +1,16 @@
-// URL de tu backend en Render
-const API_URL = "https://proyectodegradoapi.onrender.com";
+const API_URL = ""; // vacía porque ahora HTML y API están en el mismo dominio
 
-// Función para actualizar el contador en el HTML
 async function actualizar() {
   try {
-    const res = await fetch(`${API_URL}/contador`);
+    const res = await fetch("/contador");
     const data = await res.json();
-
-    // Tomamos el último valor del contador
-    if (data.length > 0) {
-      const ultimo = data[data.length - 1];
-      document.getElementById("contador").textContent = ultimo.pulsos;
-    } else {
-      document.getElementById("contador").textContent = 0;
-    }
+    const ultimo = data.length > 0 ? data[data.length - 1].pulsos : 0;
+    document.getElementById("contador").textContent = ultimo;
   } catch (err) {
-    console.error("Error al obtener el contador:", err);
+    console.error(err);
     document.getElementById("contador").textContent = "Error";
   }
 }
 
-// Actualizar automáticamente cada 3 segundos
 setInterval(actualizar, 3000);
-
-// Primera actualización al cargar la página
 actualizar();

@@ -1,36 +1,37 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../web")
 CORS(app)
 
-# ✅ Conexión con MongoDB
+# Conexión a MongoDB
 client = MongoClient("mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/?retryWrites=true&w=majority")
-db = client["proyectogrado"]
-collection = db["contador"]
+db = client["contadorDB"]
+coleccion = db["datos"]
 
-# ✅ Ruta principal (para probar que la API funciona)
-@app.route('/')
-def home():
-    return jsonify({"message": "✅ API del Proyecto de Grado activa"})
-
-# ✅ Ruta para recibir datos del ESP32
-@app.route('/contador', methods=['POST'])
-def recibir_datos():
-    data = request.get_json()
-    print("📩 Datos recibidos:", data)
-    if data:
-        collection.insert_one(data)
-        return jsonify({"status": "ok", "received": data}), 200
+# Ruta para recibir datos del ESP32
+@app.route("/contador", methods=["GET", "POST"])
+def contador():
+    if request.method == "POST":
+        data = request.get_json()
+        coleccion.insert_one(data)
+        return jsonify({"status": "ok"}), 201
     else:
-        return jsonify({"status": "error", "message": "No se recibieron datos"}), 400
+        datos = list(coleccion.find({}, {"_id": 0}))
+        return jsonify(datos)
 
-# ✅ Ruta para ver los datos almacenados
-@app.route('/contador', methods=['GET'])
-def obtener_datos():
-    datos = list(collection.find({}, {"_id": 0}))
-    return jsonify(datos)
+# Servir HTML desde /web
+@app.route("/")
+def index():
+    return send_from_directory(app.static_folder, "index.html")
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+# Servir otros archivos estáticos (JS, CSS)
+@app.route("/<path:path>")
+def static_proxy(path):
+    return send_from_directory(app.static_folder, path)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
