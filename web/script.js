@@ -1,24 +1,19 @@
-const API_URL = "https://proyectodegradoapi.onrender.com/data";
+const API_URL = "/data"; // Ruta de tu Flask backend
 
 async function actualizar() {
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error("Error en la conexión");
-    const datos = await response.json();
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-    // Mostrar el último valor recibido
-    if (datos.length > 0) {
-      const ultimoDato = datos[datos.length - 1];
-      document.getElementById("contador").textContent = ultimoDato.valor || "0";
-    } else {
-      document.getElementById("contador").textContent = "0";
-    }
-  } catch (error) {
+    // Tomamos el último valor enviado por el ESP32
+    const ultimo = data.length > 0 ? data[data.length - 1].pulsos : 0;
+    document.getElementById("contador").textContent = ultimo;
+  } catch (err) {
+    console.error(err);
     document.getElementById("contador").textContent = "Error";
-    console.error("Error al obtener datos:", error);
   }
 }
 
-// Actualiza automáticamente cada 5 segundos
-setInterval(actualizar, 5000);
+// Actualizamos automáticamente cada 3 segundos
+setInterval(actualizar, 3000);
 actualizar();
