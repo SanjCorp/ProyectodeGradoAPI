@@ -3,32 +3,31 @@
 
 const char* ssid = "Delgadillo";
 const char* password = "RIBERA18";
-const char* serverURL = "https://proyectodegradoapi.onrender.com/add";
+const char* serverURL = "https://proyectodegradoapi.onrender.com/contador";
 
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
-  Serial.print("Conectando a WiFi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nConectado!");
+  Serial.println("Conectado a WiFi");
 }
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    http.begin(serverURL);
+    http.begin(server);
     http.addHeader("Content-Type", "application/json");
-    int httpResponseCode = http.POST("{}");
-    if (httpResponseCode > 0) {
-      Serial.print("Dato enviado, respuesta: ");
-      Serial.println(httpResponseCode);
-    } else {
-      Serial.print("Error al enviar: ");
-      Serial.println(httpResponseCode);
-    }
+    
+    int pulsos = random(0, 100); // ejemplo de valor
+    String json = "{\"pulsos\": " + String(pulsos) + "}";
+    
+    int code = http.POST(json);
+    Serial.print("Dato enviado, respuesta: ");
+    Serial.println(code);
+    
     http.end();
   }
   delay(5000);

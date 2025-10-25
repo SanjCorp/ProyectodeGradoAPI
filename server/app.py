@@ -16,18 +16,20 @@ coleccion = db["datos"]
 def contador():
     if request.method == "POST":
         data = request.get_json()
-        coleccion.insert_one(data)
-        return jsonify({"status": "ok"}), 201
+        if "pulsos" in data:
+            coleccion.insert_one(data)
+            return jsonify({"status": "ok"}), 201
+        return jsonify({"error": "Dato incorrecto"}), 400
     else:
         datos = list(coleccion.find({}, {"_id": 0}))
         return jsonify(datos)
 
-# Servir HTML desde /web
+# Servir HTML desde /
 @app.route("/")
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
-# Servir otros archivos estáticos (JS, CSS)
+# Servir JS y CSS
 @app.route("/<path:path>")
 def static_proxy(path):
     return send_from_directory(app.static_folder, path)
