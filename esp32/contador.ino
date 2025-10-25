@@ -1,8 +1,8 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-const char* ssid = "TU_WIFI";
-const char* password = "TU_CONTRASEÑA";
+const char* ssid = "Delgadillo";
+const char* password = "RIBERA18";
 const char* serverURL = "https://proyectodegradoapi.onrender.com/add";
 
 void setup() {

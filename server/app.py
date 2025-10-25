@@ -5,26 +5,32 @@ from pymongo import MongoClient
 app = Flask(__name__)
 CORS(app)
 
-# Conexión a MongoDB Atlas
-client = MongoClient("mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-db = client['ProyectodeGradoAPI']
-contador_collection = db['contador']
+# ✅ Conexión con MongoDB
+client = MongoClient("mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/?retryWrites=true&w=majority")
+db = client["proyectogrado"]
+collection = db["contador"]
 
-# Inicializar contador si no existe
-if contador_collection.count_documents({}) == 0:
-    contador_collection.insert_one({"valor": 0})
+# ✅ Ruta principal (para probar que la API funciona)
+@app.route('/')
+def home():
+    return jsonify({"message": "✅ API del Proyecto de Grado activa"})
 
-@app.route("/get", methods=["GET"])
-def get_counter():
-    doc = contador_collection.find_one({})
-    return jsonify({"contador": doc["valor"]})
+# ✅ Ruta para recibir datos del ESP32
+@app.route('/contador', methods=['POST'])
+def recibir_datos():
+    data = request.get_json()
+    print("📩 Datos recibidos:", data)
+    if data:
+        collection.insert_one(data)
+        return jsonify({"status": "ok", "received": data}), 200
+    else:
+        return jsonify({"status": "error", "message": "No se recibieron datos"}), 400
 
-@app.route("/add", methods=["POST"])
-def add_counter():
-    doc = contador_collection.find_one({})
-    nuevo_valor = doc["valor"] + 1
-    contador_collection.update_one({}, {"$set": {"valor": nuevo_valor}})
-    return jsonify({"contador": nuevo_valor})
+# ✅ Ruta para ver los datos almacenados
+@app.route('/contador', methods=['GET'])
+def obtener_datos():
+    datos = list(collection.find({}, {"_id": 0}))
+    return jsonify(datos)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
