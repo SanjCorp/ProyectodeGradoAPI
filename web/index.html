@@ -1,14 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProyectodeGradoAPI</title>
+  <meta charset="UTF-8">
+  <title>Contador ESP32</title>
 </head>
 <body>
-  <h1>Contador de ESP32</h1>
-  <p>Valor actual: <span id="contador">Cargando...</span></p>
+  <h1>Contador ESP32</h1>
+  <p>Valor actual: <span id="contador">0</span></p>
   <button onclick="actualizar()">Actualizar</button>
-  <script src="script.js"></script>
+
+  <script>
+    async function actualizar() {
+      try {
+        const response = await fetch('https://proyectodegradoapi.onrender.com/data');
+        const data = await response.json();
+        if (data.length > 0) {
+          document.getElementById("contador").textContent = data[data.length - 1].contador;
+        } else {
+          document.getElementById("contador").textContent = "Sin datos";
+        }
+      } catch (error) {
+        document.getElementById("contador").textContent = "Error";
+      }
+    }
+
+    actualizar();
+    setInterval(actualizar, 5000);
+  </script>
 </body>
 </html>
