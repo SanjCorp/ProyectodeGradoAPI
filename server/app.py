@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 import os
 
-app = Flask(__name__, static_folder="../web")  # Carpeta donde están index.html, script.js
+app = Flask(__name__, static_folder="../web")  # Carpeta donde están los HTML
 CORS(app)
 
 # Configurar MongoDB
@@ -21,12 +21,17 @@ def data():
         datos = list(mongo.db.contador.find({}, {"_id": 0}))
         return jsonify(datos)
 
-# Ruta para servir HTML en la raíz
+# Ruta principal -> index.html
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
 
-# Para servir JS y CSS
+# NUEVA ruta -> monitor.html
+@app.route('/monitor')
+def serve_monitor():
+    return send_from_directory(app.static_folder, "monitor.html")
+
+# Para JS y otros archivos estáticos
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory(app.static_folder, path)
