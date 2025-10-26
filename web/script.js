@@ -1,4 +1,4 @@
-const API_URL = "/data";  // endpoint del servidor Flask
+const API_URL = "/data";
 
 async function actualizar() {
   try {
@@ -6,9 +6,9 @@ async function actualizar() {
     const data = await res.json();
 
     // Tomamos el último dato recibido
-    const ultimo = data.length > 0 ? data[data.length - 1].ECValue : 0;
+    const ultimo = data.length > 0 ? data[data.length - 1].ec : 0;
 
-    // Mostramos en el HTML con la unidad µS/cm
+    // Mostramos en la página con µS/cm
     document.getElementById("contador").textContent = `${ultimo} µS/cm`;
   } catch (err) {
     console.error(err);
