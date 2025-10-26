@@ -14,21 +14,9 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      margin: 0;
     }
-    h1 {
-      color: #0066cc;
-    }
-    #contador {
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 20px;
-    }
-    #timestamp {
-      font-size: 1rem;
-      color: #555;
-      margin-bottom: 30px;
-    }
+    h1 { color: #0066cc; }
+    #contador { font-size: 2rem; font-weight: bold; margin: 20px; }
     button {
       padding: 10px 20px;
       background-color: #0066cc;
@@ -38,20 +26,15 @@
       cursor: pointer;
       margin: 5px;
     }
-    button:hover {
-      background-color: #004d99;
-    }
+    button:hover { background-color: #004d99; }
   </style>
 </head>
 <body>
   <h1>Contador de ESP32</h1>
-  <p>Valor actual: <span id="contador">--</span> µS/cm</p>
-  <p id="timestamp">Fecha y hora: --</p>
-
-  <div>
-    <button onclick="actualizar()">Actualizar</button>
-    <button onclick="window.location.href='/monitor'">Ver Gráfica</button>
-  </div>
+  <p>Valor actual: <span id="contador">0</span> µS/cm</p>
+  <p>Hora: <span id="hora">--:--:--</span></p>
+  <button onclick="actualizar()">Actualizar</button>
+  <button onclick="window.location.href='/monitor'">Ver gráfica</button>
 
   <script src="script.js"></script>
 </body>
