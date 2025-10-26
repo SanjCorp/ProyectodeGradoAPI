@@ -1,21 +1,26 @@
-const API_URL = "/data";
+const url = "https://proyectodegradoapi.onrender.com/data";
 
 async function actualizar() {
   try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    const response = await fetch(url);
+    const datos = await response.json();
 
-    // Tomamos el último dato recibido
-    const ultimo = data.length > 0 ? data[data.length - 1].ec : 0;
-
-    // Mostramos en la página con µS/cm
-    document.getElementById("contador").textContent = `${ultimo} µS/cm`;
-  } catch (err) {
-    console.error(err);
-    document.getElementById("contador").textContent = "Error";
+    if (datos.length > 0) {
+      // Tomamos el último registro
+      const ultimo = datos[datos.length - 1];
+      document.getElementById("contador").textContent = ultimo.ec.toFixed(2);
+      document.getElementById("timestamp").textContent = ultimo.timestamp;
+    } else {
+      document.getElementById("contador").textContent = "0";
+      document.getElementById("timestamp").textContent = "--:--:--";
+    }
+  } catch (error) {
+    console.error("Error al obtener datos:", error);
   }
 }
 
-// Actualizamos cada 3 segundos
-setInterval(actualizar, 3000);
+// Opcional: actualizar automáticamente cada 5 segundos
+setInterval(actualizar, 5000);
+
+// Primera carga
 actualizar();
