@@ -1,35 +1,45 @@
 async function cargarDatos() {
-  const response = await fetch("/data");
-  const datos = await response.json();
+  try {
+    const respuesta = await fetch('/data');
+    const datos = await respuesta.json();
 
-  // Ordenar por fecha si es necesario
-  datos.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    // Agrupar por hora
+    const agrupado = {};
+    datos.forEach(d => {
+      const fecha = new Date(d.timestamp || d.fechaHora);
+      const hora = fecha.toLocaleString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false });
+      if (!agrupado[hora]) agrupado[hora] = [];
+      agrupado[hora].push(d.valor);
+    });
 
-  const etiquetas = datos.map(d => d.timestamp);
-  const valores = datos.map(d => d.ec);
+    const etiquetas = Object.keys(agrupado);
+    const promedios = etiquetas.map(h => {
+      const valores = agrupado[h];
+      return valores.reduce((a, b) => a + b, 0) / valores.length;
+    });
 
-  const ctx = document.getElementById("grafico").getContext("2d");
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: etiquetas,
-      datasets: [{
-        label: "Conductividad (µS/cm)",
-        data: valores,
-        borderWidth: 2,
-        fill: false,
-        tension: 0.2
-      }]
-    },
-    options: {
-      scales: {
-        x: { title: { display: true, text: "Hora" } },
-        y: { title: { display: true, text: "µS/cm" } }
+    const ctx = document.getElementById('grafica').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: etiquetas,
+        datasets: [{
+          label: 'Conductividad Promedio por Hora (µS/cm)',
+          data: promedios,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error('Error cargando datos:', error);
+  }
 }
 
-// Actualiza la gráfica cada 10 segundos
-cargarDatos();
-setInterval(cargarDatos, 10000);
+window.onload = cargarDatos;
