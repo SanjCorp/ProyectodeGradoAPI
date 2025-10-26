@@ -1,37 +1,35 @@
-const ctx = document.getElementById('conductivityChart').getContext('2d');
-const chart = new Chart(ctx, {
-    type: 'line',
+async function cargarDatos() {
+  const response = await fetch("/data");
+  const datos = await response.json();
+
+  // Ordenar por fecha si es necesario
+  datos.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  const etiquetas = datos.map(d => d.timestamp);
+  const valores = datos.map(d => d.ec);
+
+  const ctx = document.getElementById("grafico").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
     data: {
-        labels: [],
-        datasets: [{
-            label: 'Conductividad (µS/cm)',
-            data: [],
-            borderWidth: 2,
-            borderColor: 'blue',
-            fill: false,
-            tension: 0.1
-        }]
+      labels: etiquetas,
+      datasets: [{
+        label: "Conductividad (µS/cm)",
+        data: valores,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.2
+      }]
     },
     options: {
-        scales: {
-            y: { beginAtZero: true },
-            x: { title: { display: true, text: 'Hora' } }
-        }
+      scales: {
+        x: { title: { display: true, text: "Hora" } },
+        y: { title: { display: true, text: "µS/cm" } }
+      }
     }
-});
-
-async function fetchData() {
-    const res = await fetch('/data');
-    const data = await res.json();
-
-    const labels = data.map(d => d.timestamp);
-    const values = data.map(d => d.ec);
-
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = values;
-    chart.update();
+  });
 }
 
-// Actualiza cada 5 segundos
-setInterval(fetchData, 5000);
-fetchData();
+// Actualiza la gráfica cada 10 segundos
+cargarDatos();
+setInterval(cargarDatos, 10000);

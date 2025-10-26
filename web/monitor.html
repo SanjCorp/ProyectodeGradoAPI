@@ -1,17 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfica de Conductividad</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor de Conductividad</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    canvas {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      max-width: 90%;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #004d99;
+    }
+  </style>
 </head>
 <body>
-    <h1>Monitoreo de Conductividad</h1>
-    <p>Visualización de los valores de conductividad eléctrica (µS/cm) registrados por el ESP32.</p>
-    <canvas id="conductivityChart" width="400" height="200"></canvas>
+  <h1>Gráfica de Conductividad</h1>
+  <canvas id="grafico" width="600" height="300"></canvas>
+  <button onclick="window.location.href='/'">Volver al Inicio</button>
 
-    <script src="monitor.js"></script>
+  <script src="monitor.js"></script>
 </body>
 </html>
