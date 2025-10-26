@@ -1,20 +1,18 @@
+const API_URL = "/data"; // La misma ruta que tu Flask
+
 async function actualizar() {
   try {
-    const res = await fetch("/data");
+    const res = await fetch(API_URL);
     const data = await res.json();
-
-    if (data.length > 0) {
-      const ultimo = data[data.length - 1].EC; // nombre de la propiedad que envía el ESP32
-      document.getElementById("contador").textContent = `${ultimo} µS/cm`;
-    } else {
-      document.getElementById("contador").textContent = "0 µS/cm";
-    }
+    // Tomamos el último dato recibido
+    const ultimo = data.length > 0 ? data[data.length - 1].pulsos : 0;
+    document.getElementById("contador").textContent = `${ultimo} µS/cm`;
   } catch (err) {
     console.error(err);
     document.getElementById("contador").textContent = "Error";
   }
 }
 
-// Actualiza cada 3 segundos
+// Actualizar cada 3 segundos
 setInterval(actualizar, 3000);
 actualizar();
