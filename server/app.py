@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo
 from flask_cors import CORS
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -12,9 +13,12 @@ mongo = PyMongo(app)
 def data():
     if request.method == 'POST':
         data = request.get_json()
+        # Si el timestamp no viene del ESP32, generar aquí
+        if "timestamp" not in data:
+            data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         mongo.db.contador.insert_one(data)
         return jsonify({"message": "Dato recibido"}), 201
-    else:  # GET
+    else:
         datos = list(mongo.db.contador.find({}, {"_id": 0}))
         return jsonify(datos)
 
