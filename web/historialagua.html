@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial de Envíos de Agua</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Historial de Envíos de Agua</h1>
+<button onclick="window.location.href='index.html'">Volver al Monitor</button>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Fecha/Hora</th>
+      <th>Litros Enviados</th>
+      <th>Operador</th>
+    </tr>
+  </thead>
+  <tbody id="tablaHistorial"></tbody>
+</table>
+
+<script>
+async function cargarHistorialAgua() {
+    try {
+        const res = await fetch('/historial_agua/data');
+        const datos = await res.json();
+        const tbody = document.getElementById('tablaHistorial');
+        tbody.innerHTML = "";
+
+        datos.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(d.timestamp).toLocaleString()}</td>
+                <td>${d.litros}</td>
+                <td>${d.codigo}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error al cargar historial:", error);
+    }
+}
+
+cargarHistorialAgua();
+</script>
+</body>
+</html>
