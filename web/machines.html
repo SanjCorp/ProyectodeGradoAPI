@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Datos de Máquinas</title>
+  <style> body{font-family:Arial;padding:20px} table{border-collapse:collapse;} td,th{border:1px solid #ddd;padding:6px} input{width:100%} </style>
+</head>
+<body>
+  <h1>Registro de Máquinas (6x2)</h1>
+  <button onclick="window.location.href='/'">Volver</button>
+  <form id="form">
+    Lote: <input name="lote" value="01"><br>
+    Semana: <input name="semana" value="1"><br>
+    Mes: <input name="mes" value="10"><br>
+    Año: <input name="anio" value="2025"><br>
+    Día (L/M/Mm/J/V/S): <input name="diaChar" value="L"><br><br>
+
+    <table>
+      <thead><tr><th>Dato</th><th>Valor</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <button type="button" onclick="save()">Guardar</button>
+    <p id="result"></p>
+  </form>
+
+  <script>
+    const labels = [
+      "Temperatura entrada",
+      "Temperatura salida",
+      "Conductividad entrada",
+      "Conductividad salida",
+      "Caudal entrada",
+      "Caudal salida"
+    ];
+
+    const tbody = document.getElementById('rows');
+    labels.forEach((lab,i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${lab}</td><td><input name="v${i}"></td>`;
+      tbody.appendChild(tr);
+    });
+
+    async function save(){
+      const f = document.getElementById('form');
+      const fd = new FormData(f);
+      const rowData = labels.map((lab,i) => [lab, fd.get(`v${i}`) || ""]);
+      const payload = {
+        lote: fd.get('lote'),
+        semana: fd.get('semana'),
+        mes: fd.get('mes'),
+        anio: fd.get('anio'),
+        diaChar: fd.get('diaChar'),
+        rowData
+      };
+      const res = await fetch('/machines', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':''}, body: JSON.stringify(payload)});
+      const json = await res.json();
+      document.getElementById('result').textContent = `Guardado con código: ${json.code}`;
+    }
+  </script>
+</body>
+</html>

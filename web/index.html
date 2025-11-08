@@ -3,39 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contador de ESP32</title>
+  <title>Contador de ESP32 - Panel</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    h1 { color: #0066cc; }
-    #contador { font-size: 2rem; font-weight: bold; margin: 20px; }
-    button {
-      padding: 10px 20px;
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 5px;
-    }
-    button:hover { background-color: #004d99; }
+    body { font-family: Arial, sans-serif; background:#f0f2f5; color:#333; display:flex; flex-direction:column; align-items:center; padding:30px; }
+    h1{ color:#0066cc }
+    .card{ background:white; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); width:100%; max-width:720px; margin-bottom:16px;}
+    button{ padding:10px 16px; border-radius:8px; border:none; background:#0066cc; color:white; cursor:pointer; margin:4px}
+    button.secondary{ background:#888 }
+    .row{ display:flex; gap:10px; flex-wrap:wrap;}
   </style>
 </head>
 <body>
-  <h1>Contador de ESP32</h1>
-  <p>Valor actual: <span id="contador">0</span> µS/cm</p>
-  <p>Hora: <span id="hora">--:--:--</span></p>
-  <button onclick="actualizar()">Actualizar</button>
-  <button onclick="window.location.href='/monitor'">Ver gráfica</button>
+  <h1>Contador de ESP32 - Panel</h1>
 
-  <script src="script.js"></script>
+  <div class="card">
+    <h2>Lectura actual</h2>
+    <p>Valor EC: <strong><span id="contador">--</span> µS/cm</strong></p>
+    <p>Hora: <span id="hora">--</span></p>
+    <div class="row">
+      <button onclick="actualizar()">Actualizar</button>
+      <button onclick="window.location.href='/monitor'">Ver Gráfica</button>
+      <button onclick="window.location.href='/send-history'">Historial de Envios</button>
+      <button onclick="window.location.href='/machines-page'">Datos de Máquinas</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Control de Envío de Agua</h2>
+    <p>Nivel actual del tanque: <strong><span id="level">--</span></strong></p>
+    <div class="row">
+      <button onclick="startSend()">Enviar Agua</button>
+      <button class="secondary" onclick="cancelActive()">Cancelar Orden Activa</button>
+    </div>
+    <p id="send-status"></p>
+  </div>
+
+  <script>
+    const API_KEY = ""; // SI quieres usar API key, ponla aquí (no es seguro en cliente -> usar backend o auth)
+    const base = "";
+
+    async function actualizar() {
+      try {
+        const res = await fetch(base + "/data");
+        const datos = await res.json();
+        if (datos.length > 0) {
+          const ultimo = datos[datos.length - 1];
+          document.getElementById('contador').textContent = (parseFloat(ultimo.ec || ultimo.ECValue || 0)).toFixed(2);
+          document.getElementById('hora').textContent = ultimo.timestamp || ultimo.time || "--";
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function actualizarLevel(){
+      try {
+        const res = await fetch(base + "/level/last");
+        const json = await res.json();
+        if (json && json.level !== undefined) document.getElementById('level').textContent = json.level;
+        else document.getElementById('level').textContent = "--";
+      } catch (e) { console.error(e); }
+    }
+
+    async function startSend(){
+      const amount = prompt("Ingrese cantidad de agua a enviar (unidades definidas, ej. litros):");
+      if (!amount) return;
+      const target = parseFloat(amount);
+      if (isNaN(target) || target <= 0){ alert("Cantidad inválida"); return; }
+      try {
+        const headers = {"Content-Type":"application/json"};
+        if (API_KEY) headers["x-api-key"] = API_KEY;
+        const res = await fetch(base + "/send_request", { method:"POST", headers, body: JSON.stringify({target, device: "esp32_1"})});
+        const json = await res.json();
+        document.getElementById('send-status').textContent = `Orden creada — target: ${json.target} — status: ${json.status || json.state || 'pending'}`;
+      } catch (e) { console.error(e); alert("Error creando orden"); }
+    }
+
+    async function cancelActive(){
+      if (!confirm("Cancelar orden activa?")) return;
+      try {
+        const headers = {"Content-Type":"application/json"};
+        if (API_KEY) headers["x-api-key"] = API_KEY;
+        await fetch(base + "/send_request/cancel", {method:"POST", headers, body: JSON.stringify({device: "esp32_1"})});
+        alert("Orden cancelada");
+      } catch (e) { console.error(e); }
+    }
+
+    // auto refresh
+    setInterval(actualizar, 5000);
+    setInterval(actualizarLevel, 3000);
+    window.onload = () => { actualizar(); actualizarLevel(); };
+  </script>
 </body>
 </html>

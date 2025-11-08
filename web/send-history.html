@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Historial de Envios</title>
+  <style> body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:8px}</style>
+</head>
+<body>
+  <h1>Historial de Envios</h1>
+  <button onclick="window.location.href='/'">Volver</button>
+  <table>
+    <thead><tr><th>Request ID</th><th>Device</th><th>Delta</th><th>Accum</th><th>Timestamp</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <script>
+    async function cargar(){
+      const res = await fetch('/send_history');
+      const datos = await res.json();
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      datos.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${d.request_id}</td><td>${d.device}</td><td>${d.delta}</td><td>${d.accumulated}</td><td>${d.timestamp}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    window.onload = cargar;
+  </script>
+</body>
+</html>
