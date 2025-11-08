@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial de Envios</title>
+</head>
+<body>
+<h1>Historial de Envios</h1>
+<table border="1">
+<thead><tr><th>Fecha</th><th>Litros</th></tr></thead>
+<tbody id="tabla"></tbody>
+</table>
+<br>
+<button onclick="window.location.href='/'">Volver al inicio</button>
+<script>
+async function cargarEnvios(){
+  const res = await fetch('/envios');
+  const datos = await res.json();
+  const tbody = document.getElementById('tabla');
+  tbody.innerHTML='';
+  datos.forEach(d=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${d.timestamp}</td><td>${d.litros}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+cargarEnvios();
+</script>
+</body>
+</html>

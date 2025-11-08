@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Osmosis</title>
+</head>
+<body>
+<h1>Registro de Osmosis</h1>
+<table border="1">
+<tr><th>Campo</th><th>Valor</th></tr>
+<tr><td>Temperatura Entrada</td><td><input id="tEntrada"></td></tr>
+<tr><td>Temperatura Salida</td><td><input id="tSalida"></td></tr>
+<tr><td>Conductividad Entrada</td><td><input id="cEntrada"></td></tr>
+<tr><td>Conductividad Salida</td><td><input id="cSalida"></td></tr>
+<tr><td>Caudal Entrada</td><td><input id="caudalEntrada"></td></tr>
+<tr><td>Caudal Salida</td><td><input id="caudalSalida"></td></tr>
+</table>
+<button onclick="guardarRegistro()">Guardar Registro</button>
+<br><br>
+<h3>Buscar Registro por Código</h3>
+<input id="codigoBuscar">
+<button onclick="buscarRegistro()">Buscar</button>
+<div id="resultados"></div>
+<br>
+<button onclick="window.location.href='/'">Volver al inicio</button>
+<script>
+async function guardarRegistro(){
+  const data = {
+    tEntrada:parseFloat(document.getElementById('tEntrada').value),
+    tSalida:parseFloat(document.getElementById('tSalida').value),
+    cEntrada:parseFloat(document.getElementById('cEntrada').value),
+    cSalida:parseFloat(document.getElementById('cSalida').value),
+    caudalEntrada:parseFloat(document.getElementById('caudalEntrada').value),
+    caudalSalida:parseFloat(document.getElementById('caudalSalida').value)
+  };
+  const res = await fetch('/osmosis',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  const resp = await res.json();
+  alert('Registro guardado con código: '+resp.codigo);
+}
+
+async function buscarRegistro(){
+  const codigo = document.getElementById('codigoBuscar').value;
+  const res = await fetch('/buscar_osmosis/'+codigo);
+  const datos = await res.json();
+  const div = document.getElementById('resultados');
+  div.innerHTML = '';
+  if(datos.length>0){
+    datos.forEach(d=>{
+      div.innerHTML+=JSON.stringify(d)+'<br>';
+    });
+  } else {
+    div.innerHTML='No encontrado';
+  }
+}
+</script>
+</body>
+</html>
