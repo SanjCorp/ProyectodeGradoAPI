@@ -70,3 +70,13 @@ def serve_static(path):
 # ------------------------ RUN ------------------------
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
+# Rutas para registrar datos de ósmosis
+@app.route('/registro', methods=['GET', 'POST'])
+def registro():
+    if request.method == 'POST':
+        data = request.get_json()
+        mongo.db.registroOsmosis.insert_one(data)
+        return jsonify({"message": "Registro guardado"}), 201
+    else:  # GET
+        registros = list(mongo.db.registroOsmosis.find({}, {"_id": 0}))
+        return jsonify(registros)

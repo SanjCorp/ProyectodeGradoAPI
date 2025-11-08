@@ -1,75 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro Osmosis</title>
-<style>
-  body { font-family: Arial, sans-serif; text-align:center; background:#f0f2f5; padding:20px;}
-  table { margin:auto; border-collapse: collapse; }
-  td { padding:10px; border:1px solid #ccc; }
-  input { width:100%; padding:5px; }
-  button { padding:10px 20px; margin:10px; background:#0066cc; color:white; border:none; border-radius:8px; cursor:pointer;}
-  button:hover{background:#004d99;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Ósmosis</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    h1 { text-align: center; }
+    table { margin: 0 auto; border-collapse: collapse; }
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 5px; }
+    button { margin-top: 20px; padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #004d99; }
+    .success { color: green; margin-top: 10px; text-align: center; }
+  </style>
 </head>
 <body>
-<h1>Registro de Datos de Osmosis</h1>
+  <h1>Registro de Datos de Ósmosis</h1>
 
-<table>
-  <tr>
-    <td>Temperatura Entrada</td>
-    <td><input type="number" id="tempEntrada"></td>
-  </tr>
-  <tr>
-    <td>Temperatura Salida</td>
-    <td><input type="number" id="tempSalida"></td>
-  </tr>
-  <tr>
-    <td>Conductividad Entrada</td>
-    <td><input type="number" id="ceEntrada"></td>
-  </tr>
-  <tr>
-    <td>Conductividad Salida</td>
-    <td><input type="number" id="ceSalida"></td>
-  </tr>
-  <tr>
-    <td>Caudal Entrada</td>
-    <td><input type="number" id="caudalEntrada"></td>
-  </tr>
-  <tr>
-    <td>Caudal Salida</td>
-    <td><input type="number" id="caudalSalida"></td>
-  </tr>
-</table>
+  <label>Ingrese código del usuario:</label>
+  <input type="text" id="codigoUsuario" placeholder="Ej: 300">
+  
+  <table>
+    <tr>
+      <th>Parámetro</th>
+      <th>Valor</th>
+    </tr>
+    <tr><td>Temperatura Entrada</td><td><input type="number" id="tempEntrada"></td></tr>
+    <tr><td>Temperatura Salida</td><td><input type="number" id="tempSalida"></td></tr>
+    <tr><td>Conductividad Entrada</td><td><input type="number" id="condEntrada"></td></tr>
+    <tr><td>Conductividad Salida</td><td><input type="number" id="condSalida"></td></tr>
+    <tr><td>Caudal Entrada</td><td><input type="number" id="caudalEntrada"></td></tr>
+    <tr><td>Caudal Salida</td><td><input type="number" id="caudalSalida"></td></tr>
+  </table>
 
-<br>
-<button onclick="guardarRegistro()">Guardar Registro</button>
-<br>
-<button onclick="window.location.href='/'">Volver al inicio</button>
+  <button onclick="registrarDatos()">Registrar</button>
+  <div id="mensaje" class="success"></div>
+  <br>
+  <button onclick="window.location.href='historial.html'">Ver Historial</button>
 
-<script>
-async function guardarRegistro(){
-  const data = {
-    tempEntrada: Number(document.getElementById('tempEntrada').value),
-    tempSalida: Number(document.getElementById('tempSalida').value),
-    ceEntrada: Number(document.getElementById('ceEntrada').value),
-    ceSalida: Number(document.getElementById('ceSalida').value),
-    caudalEntrada: Number(document.getElementById('caudalEntrada').value),
-    caudalSalida: Number(document.getElementById('caudalSalida').value),
-    lote: '01',
-    sistema:'1'
-  };
+  <script>
+    const usuarios = {
+      "300": "ARIEL VALDIVIA",
+      "1175": "CHRISTOFER",
+      "984": "MARCOS JUSTINIANO",
+      "116": "RICARDO SANJINES",
+      "215": "BRAYAN CHOQUE"
+    };
 
-  const res = await fetch('/registro', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
+    async function registrarDatos() {
+      const codigo = document.getElementById('codigoUsuario').value.trim();
+      const nombre = usuarios[codigo] || "Desconocido";
+      
+      const data = {
+        usuario: nombre,
+        codigo: codigo,
+        tempEntrada: parseFloat(document.getElementById('tempEntrada').value),
+        tempSalida: parseFloat(document.getElementById('tempSalida').value),
+        condEntrada: parseFloat(document.getElementById('condEntrada').value),
+        condSalida: parseFloat(document.getElementById('condSalida').value),
+        caudalEntrada: parseFloat(document.getElementById('caudalEntrada').value),
+        caudalSalida: parseFloat(document.getElementById('caudalSalida').value),
+        timestamp: new Date().toISOString()
+      };
 
-  const result = await res.json();
-  alert("Registro guardado con código: " + result.codigo_lote);
-}
-</script>
+      try {
+        const res = await fetch('/registro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if(res.status === 201){
+          document.getElementById('mensaje').innerText = "Datos registrados correctamente";
+        } else {
+          document.getElementById('mensaje').innerText = "Error al registrar datos";
+        }
+      } catch(err) {
+        console.error(err);
+        document.getElementById('mensaje').innerText = "Error al registrar datos";
+      }
+    }
+  </script>
 </body>
 </html>

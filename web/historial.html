@@ -1,74 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historial de Registros</title>
-<style>
-  body { font-family: Arial, sans-serif; background:#f0f2f5; padding:20px; text-align:center;}
-  table { margin:auto; border-collapse: collapse; width:90%; }
-  th, td { padding:8px; border:1px solid #ccc; text-align:center; }
-  th { background:#0066cc; color:white;}
-  input, button { padding:5px; margin:5px;}
-  button{ background:#0066cc; color:white; border:none; border-radius:5px; cursor:pointer;}
-  button:hover{background:#004d99;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial de Ósmosis</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    h1 { text-align: center; }
+    table { margin: 0 auto; border-collapse: collapse; width: 90%; }
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { margin: 10px; padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #004d99; }
+  </style>
 </head>
 <body>
-<h1>Historial de Registros de Osmosis</h1>
+  <h1>Historial de Ósmosis</h1>
+  <table id="tablaHistorial">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Código</th>
+        <th>Temp Entrada</th>
+        <th>Temp Salida</th>
+        <th>Cond Entrada</th>
+        <th>Cond Salida</th>
+        <th>Caudal Entrada</th>
+        <th>Caudal Salida</th>
+        <th>Fecha/Hora</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <br>
+  <button onclick="window.location.href='registro.html'">Registrar Nuevo</button>
+  <button onclick="window.location.href='/'">Volver al inicio</button>
 
-<label>Buscar por código:</label>
-<input type="text" id="codigoBuscar" placeholder="Ej: 04-S1-1125-L">
-<button onclick="buscarRegistro()">Buscar</button>
+  <script>
+    async function cargarHistorial() {
+      try {
+        const res = await fetch('/registro');
+        const datos = await res.json();
+        const tbody = document.querySelector('#tablaHistorial tbody');
+        tbody.innerHTML = '';
+        datos.forEach(d => {
+          const fila = document.createElement('tr');
+          fila.innerHTML = `
+            <td>${d.usuario}</td>
+            <td>${d.codigo}</td>
+            <td>${d.tempEntrada}</td>
+            <td>${d.tempSalida}</td>
+            <td>${d.condEntrada}</td>
+            <td>${d.condSalida}</td>
+            <td>${d.caudalEntrada}</td>
+            <td>${d.caudalSalida}</td>
+            <td>${new Date(d.timestamp).toLocaleString()}</td>
+          `;
+          tbody.appendChild(fila);
+        });
+      } catch(err) {
+        console.error('Error cargando historial:', err);
+      }
+    }
 
-<table id="tablaHistorial">
-  <thead>
-    <tr>
-      <th>Código</th>
-      <th>Temperatura Entrada</th>
-      <th>Temperatura Salida</th>
-      <th>Conductividad Entrada</th>
-      <th>Conductividad Salida</th>
-      <th>Caudal Entrada</th>
-      <th>Caudal Salida</th>
-      <th>Fecha/Hora</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<br>
-<button onclick="window.location.href='/'">Volver al inicio</button>
-
-<script>
-async function cargarHistorial(codigo=null){
-  const res = await fetch('/registro');
-  const registros = await res.json();
-  const tbody = document.querySelector('#tablaHistorial tbody');
-  tbody.innerHTML = '';
-
-  registros.forEach(r=>{
-    if(codigo && r.codigo_lote !== codigo) return;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.codigo_lote}</td>
-                    <td>${r.tempEntrada}</td>
-                    <td>${r.tempSalida}</td>
-                    <td>${r.ceEntrada}</td>
-                    <td>${r.ceSalida}</td>
-                    <td>${r.caudalEntrada}</td>
-                    <td>${r.caudalSalida}</td>
-                    <td>${r.timestamp}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function buscarRegistro(){
-  const codigo = document.getElementById('codigoBuscar').value;
-  cargarHistorial(codigo);
-}
-
-// Cargar todo al inicio
-cargarHistorial();
-</script>
+    cargarHistorial();
+  </script>
 </body>
 </html>
