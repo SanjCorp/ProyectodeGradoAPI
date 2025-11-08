@@ -3,29 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historial de Envios</title>
+<title>Historial de Registros</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f0f2f5; padding:20px; text-align:center;}
+  table { margin:auto; border-collapse: collapse; width:90%; }
+  th, td { padding:8px; border:1px solid #ccc; text-align:center; }
+  th { background:#0066cc; color:white;}
+  input, button { padding:5px; margin:5px;}
+  button{ background:#0066cc; color:white; border:none; border-radius:5px; cursor:pointer;}
+  button:hover{background:#004d99;}
+</style>
 </head>
 <body>
-<h1>Historial de Envios</h1>
-<table border="1">
-<thead><tr><th>Fecha</th><th>Litros</th></tr></thead>
-<tbody id="tabla"></tbody>
+<h1>Historial de Registros de Osmosis</h1>
+
+<label>Buscar por código:</label>
+<input type="text" id="codigoBuscar" placeholder="Ej: 04-S1-1125-L">
+<button onclick="buscarRegistro()">Buscar</button>
+
+<table id="tablaHistorial">
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Temperatura Entrada</th>
+      <th>Temperatura Salida</th>
+      <th>Conductividad Entrada</th>
+      <th>Conductividad Salida</th>
+      <th>Caudal Entrada</th>
+      <th>Caudal Salida</th>
+      <th>Fecha/Hora</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
+
 <br>
 <button onclick="window.location.href='/'">Volver al inicio</button>
+
 <script>
-async function cargarEnvios(){
-  const res = await fetch('/envios');
-  const datos = await res.json();
-  const tbody = document.getElementById('tabla');
-  tbody.innerHTML='';
-  datos.forEach(d=>{
+async function cargarHistorial(codigo=null){
+  const res = await fetch('/registro');
+  const registros = await res.json();
+  const tbody = document.querySelector('#tablaHistorial tbody');
+  tbody.innerHTML = '';
+
+  registros.forEach(r=>{
+    if(codigo && r.codigo_lote !== codigo) return;
     const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${d.timestamp}</td><td>${d.litros}</td>`;
+    tr.innerHTML = `<td>${r.codigo_lote}</td>
+                    <td>${r.tempEntrada}</td>
+                    <td>${r.tempSalida}</td>
+                    <td>${r.ceEntrada}</td>
+                    <td>${r.ceSalida}</td>
+                    <td>${r.caudalEntrada}</td>
+                    <td>${r.caudalSalida}</td>
+                    <td>${r.timestamp}</td>`;
     tbody.appendChild(tr);
   });
 }
-cargarEnvios();
+
+function buscarRegistro(){
+  const codigo = document.getElementById('codigoBuscar').value;
+  cargarHistorial(codigo);
+}
+
+// Cargar todo al inicio
+cargarHistorial();
 </script>
 </body>
 </html>

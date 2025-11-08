@@ -1,98 +1,72 @@
 let chart;
-let ecData = [];
-let ecLabels = [];
 
-const userMap = {
-  300: "ARIEL VALDIVIA",
-  1175: "CHRISTOFER",
-  984: "MARCOS JUSTINIANO",
-  116: "RICARDO SANJINES",
-  215: "BRAYAN CHOQUE"
-};
+async function actualizar() {
+  const res = await fetch('/data');
+  const datos = await res.json();
+  if(datos.length==0) return;
 
-// Función para obtener datos del ESP32
-async function obtenerDatos() {
-  try {
-    const res = await fetch('/data');
-    const datos = await res.json();
+  const ultimo = datos[datos.length-1];
+  document.getElementById('contador').textContent = ultimo.ec.toFixed(2);
+  document.getElementById('nivel1').textContent = ultimo.tk100 || 0;
+  document.getElementById('nivel2').textContent = ultimo.tk101 || 0;
+  document.getElementById('nivel3').textContent = ultimo.tk900 || 0;
 
-    // Última conductividad
-    const ultimo = datos[datos.length - 1];
-    if (ultimo) {
-      document.getElementById('ecValue').textContent = ultimo.ec.toFixed(2);
-      document.getElementById('nivel1').textContent = ultimo.nivel1 || 0;
-      document.getElementById('nivel2').textContent = ultimo.nivel2 || 0;
-      document.getElementById('nivel3').textContent = ultimo.nivel3 || 0;
+  // Grafica por hora
+  const agrupado = {};
+  datos.forEach(d => {
+    const fecha = new Date(d.timestamp);
+    const hora = fecha.toISOString().slice(0,13);
+    if(!agrupado[hora]) agrupado[hora] = [];
+    agrupado[hora].push(d.ec);
+  });
+  const labels = Object.keys(agrupado).sort();
+  const valores = labels.map(h => {
+    const arr = agrupado[h];
+    return arr.reduce((a,b)=>a+b,0)/arr.length;
+  });
 
-      // Agregar al gráfico
-      const ahora = new Date();
-      ecData.push(ultimo.ec);
-      ecLabels.push(ahora.toLocaleTimeString());
-      if (ecData.length > 60) { // últimos 5 minutos aprox
-        ecData.shift();
-        ecLabels.shift();
-      }
-
-      if (!chart) {
-        const ctx = document.getElementById('grafica').getContext('2d');
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ecLabels,
-            datasets: [{
-              label: 'Conductividad (µS/cm)',
-              data: ecData,
-              borderColor: '#0066cc',
-              fill: false,
-              tension: 0.2
-            }]
-          },
-          options: {
-            scales: {
-              y: { beginAtZero: true }
-            }
-          }
-        });
-      } else {
-        chart.data.labels = ecLabels;
-        chart.data.datasets[0].data = ecData;
-        chart.update();
-      }
-    }
-
-  } catch (error) {
-    console.error("Error obteniendo datos:", error);
+  if(!chart){
+    const ctx = document.getElementById('grafica').getContext('2d');
+    chart = new Chart(ctx, {
+      type:'line',
+      data:{ labels: labels.map(h=>h.replace("T"," ")), datasets:[{ label:'Conductividad (µS/cm)', data: valores, borderColor:'#0066cc', fill:false, tension:0.2 }]},
+      options:{ scales:{ x:{ title:{display:true,text:'Hora'} }, y:{ title:{display:true,text:'µS/cm'} } } }
+    });
+  } else {
+    chart.data.labels = labels.map(h=>h.replace("T"," "));
+    chart.data.datasets[0].data = valores;
+    chart.update();
   }
 }
 
-// Registrar usuario
-function registrarUsuario() {
-  const codigo = parseInt(document.getElementById('codigo').value);
-  const nombre = userMap[codigo] || "Desconocido";
-  document.getElementById('nombreUsuario').textContent = nombre;
+// Función de envío de agua
+async function enviarAgua(){
+  const cantidad = prompt("Ingrese cantidad de agua a enviar (litros):");
+  if(!cantidad) return;
 
-  // Guardar en MongoDB
-  fetch('/data', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo: 'registro', codigo, nombre, timestamp: new Date() })
+  // Activar LED
+  const led = document.getElementById('led');
+  led.classList.remove('led-off');
+  led.classList.add('led-on');
+
+  // Enviar comando al ESP32 (simulado con POST)
+  const res = await fetch('/data', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ comando:'enviar_agua', cantidad: Number(cantidad) })
   });
+  const result = await res.json();
+  console.log(result);
+
+  // Simulación de llegada de agua
+  setTimeout(()=>{ 
+    led.classList.remove('led-on'); 
+    led.classList.add('led-off');
+    alert("Agua enviada");
+    actualizar();
+  }, 3000); // 3 seg solo para demo, reemplazar con dato real del flujometro
 }
 
-// Enviar agua
-function enviarAgua() {
-  const cantidad = parseFloat(document.getElementById('cantidad').value);
-  if (!cantidad || cantidad <= 0) return alert("Ingrese cantidad válida");
-
-  document.getElementById('estadoAgua').textContent = "Enviando Agua";
-
-  // Mandar orden al ESP32
-  fetch('/data', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo: 'envio', cantidad, timestamp: new Date() })
-  });
-}
-
-// Actualiza datos cada 5 segundos
-setInterval(obtenerDatos, 5000);
+// Auto-refresco cada 5s
+setInterval(actualizar,5000);
+actualizar();

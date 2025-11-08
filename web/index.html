@@ -3,81 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Principal - Osmosis</title>
+  <title>Contador de ESP32</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h1 { color: #0066cc; }
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 800px;
-    }
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #004d99; }
-    input { padding: 5px; width: 80px; margin-left: 5px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 8px; text-align: center; }
+    body { font-family: Arial, sans-serif; background:#f0f2f5; text-align:center; padding:20px;}
+    h1 { color:#0066cc;}
+    #contador, #nivel1, #nivel2, #nivel3 { font-size: 2rem; margin: 10px;}
+    button { padding: 10px 20px; margin:10px; background:#0066cc; color:white; border:none; border-radius:8px; cursor:pointer;}
+    button:hover { background:#004d99; }
+    .led { display:inline-block; width:20px; height:20px; border-radius:50%; margin-left:10px; vertical-align:middle;}
+    .led-off { background:#ccc; }
+    .led-on { background:#0f0; }
   </style>
 </head>
 <body>
-  <h1>Panel Principal - Osmosis</h1>
+  <h1>Control ESP32 - Osmosis</h1>
+  
+  <p>Conductividad actual: <span id="contador">0</span> µS/cm</p>
+  <p>Nivel Tanque 1: <span id="nivel1">0</span></p>
+  <p>Nivel Tanque 2: <span id="nivel2">0</span></p>
+  <p>Nivel Tanque 3: <span id="nivel3">0</span></p>
+  
+  <button onclick="actualizar()">Actualizar Datos</button>
+  <button onclick="enviarAgua()">Enviar Agua</button>
+  <span id="led" class="led led-off"></span>
+  
+  <br>
+  <button onclick="window.location.href='/monitor'">Ir a Monitor</button>
+  <button onclick="window.location.href='/registro_page'">Registrar Osmosis</button>
+  <button onclick="window.location.href='/historial'">Ver Historial</button>
 
-  <!-- Conductividad -->
-  <div class="card">
-    <h2>Conductividad</h2>
-    <p>Valor actual: <span id="ecValue">0</span> µS/cm</p>
-    <canvas id="grafica"></canvas>
-  </div>
-
-  <!-- Nivel de Agua -->
-  <div class="card">
-    <h2>Nivel de Agua</h2>
-    <p>Tanque 1: <span id="nivel1">0</span> %</p>
-    <p>Tanque 2: <span id="nivel2">0</span> %</p>
-    <p>Tanque 3: <span id="nivel3">0</span> %</p>
-  </div>
-
-  <!-- Enviar Agua -->
-  <div class="card">
-    <h2>Enviar Agua</h2>
-    <label for="cantidad">Cantidad a enviar (L): </label>
-    <input type="number" id="cantidad" min="0">
-    <button onclick="enviarAgua()">Enviar</button>
-    <p>Estado: <span id="estadoAgua">Esperando orden</span></p>
-  </div>
-
-  <!-- Registro de Usuarios -->
-  <div class="card">
-    <h2>Registro de Usuarios</h2>
-    <label for="codigo">Ingrese código:</label>
-    <input type="number" id="codigo">
-    <button onclick="registrarUsuario()">Registrar</button>
-    <p>Nombre: <span id="nombreUsuario">---</span></p>
-  </div>
-
-  <button onclick="window.location.href='monitor.html'">Ir a Monitor</button>
+  <canvas id="grafica" style="max-width:800px;margin:20px auto;"></canvas>
 
   <script src="script.js"></script>
 </body>
