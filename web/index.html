@@ -1,56 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contador de ESP32</title>
-<style>
-body { font-family: Arial; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;}
-h1{color:#0066cc;}
-#contador,#flujo,#nivel1,#nivel2,#nivel3{font-size:1.5rem; margin:10px;}
-button{padding:10px 20px; background:#0066cc;color:white;border:none;border-radius:8px;cursor:pointer;}
-button:hover{background:#004d99;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Principal - Osmosis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 { color: #0066cc; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #004d99; }
+    input { padding: 5px; width: 80px; margin-left: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 8px; text-align: center; }
+  </style>
 </head>
 <body>
-<h1>Contador de ESP32</h1>
-<p>Conductividad: <span id="contador">0</span> µS/cm</p>
-<p>Flujo actual: <span id="flujo">0</span> L</p>
-<p>Nivel TK100: <span id="nivel1">0</span></p>
-<p>Nivel TK101: <span id="nivel2">0</span></p>
-<p>Nivel TK900: <span id="nivel3">0</span></p>
+  <h1>Panel Principal - Osmosis</h1>
 
-<button onclick="enviarAgua()">Enviar Agua</button>
-<button onclick="window.location.href='/monitor'">Monitor</button>
-<button onclick="window.location.href='/historial'">Historial</button>
-<button onclick="window.location.href='/registro'">Registro Osmosis</button>
+  <!-- Conductividad -->
+  <div class="card">
+    <h2>Conductividad</h2>
+    <p>Valor actual: <span id="ecValue">0</span> µS/cm</p>
+    <canvas id="grafica"></canvas>
+  </div>
 
-<script>
-async function actualizar(){
-  const res = await fetch('/data');
-  const datos = await res.json();
-  if(datos.length>0){
-    const ultimo = datos[datos.length-1];
-    document.getElementById('contador').innerText = ultimo.ec.toFixed(2);
-    document.getElementById('flujo').innerText = (ultimo.flujo||0).toFixed(2);
-    document.getElementById('nivel1').innerText = ultimo.nivel1;
-    document.getElementById('nivel2').innerText = ultimo.nivel2;
-    document.getElementById('nivel3').innerText = ultimo.nivel3;
-  }
-}
+  <!-- Nivel de Agua -->
+  <div class="card">
+    <h2>Nivel de Agua</h2>
+    <p>Tanque 1: <span id="nivel1">0</span> %</p>
+    <p>Tanque 2: <span id="nivel2">0</span> %</p>
+    <p>Tanque 3: <span id="nivel3">0</span> %</p>
+  </div>
 
-async function enviarAgua(){
-  const litros = prompt("Cantidad de agua a enviar (L):");
-  if(litros){
-    await fetch('/enviar',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({litros:parseFloat(litros)})
-    });
-  }
-}
+  <!-- Enviar Agua -->
+  <div class="card">
+    <h2>Enviar Agua</h2>
+    <label for="cantidad">Cantidad a enviar (L): </label>
+    <input type="number" id="cantidad" min="0">
+    <button onclick="enviarAgua()">Enviar</button>
+    <p>Estado: <span id="estadoAgua">Esperando orden</span></p>
+  </div>
 
-setInterval(actualizar,3000);
-</script>
+  <!-- Registro de Usuarios -->
+  <div class="card">
+    <h2>Registro de Usuarios</h2>
+    <label for="codigo">Ingrese código:</label>
+    <input type="number" id="codigo">
+    <button onclick="registrarUsuario()">Registrar</button>
+    <p>Nombre: <span id="nombreUsuario">---</span></p>
+  </div>
+
+  <button onclick="window.location.href='monitor.html'">Ir a Monitor</button>
+
+  <script src="script.js"></script>
 </body>
 </html>
+
