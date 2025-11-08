@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_pymongo import PyMongo
 from flask_cors import CORS
-import os
 from datetime import datetime
 
 app = Flask(__name__, static_folder="../web")  # Carpeta donde están los HTML y JS
@@ -25,9 +24,9 @@ def data():
         datos = list(mongo.db.contador.find({}, {"_id": 0}))
         return jsonify(datos)
 
-# Registrar datos de osmosis
+# Registrar datos de osmosis avanzado con código automático
 @app.route('/registro', methods=['GET', 'POST'])
-def registro():
+def registro_osmosis():
     if request.method == 'POST':
         datos = request.get_json()
         # Generar código automático del registro
@@ -43,6 +42,17 @@ def registro():
         return jsonify({"message": "Registro guardado", "codigo_lote": lote}), 201
     else:
         registros = list(mongo.db.registros.find({}, {"_id":0}))
+        return jsonify(registros)
+
+# Registrar datos de osmosis simple (otra colección)
+@app.route('/registro_osmosis', methods=['GET', 'POST'])
+def registro_osmosis_simple():
+    if request.method == 'POST':
+        data = request.get_json()
+        mongo.db.registroOsmosis.insert_one(data)
+        return jsonify({"message": "Registro guardado"}), 201
+    else:  # GET
+        registros = list(mongo.db.registroOsmosis.find({}, {"_id": 0}))
         return jsonify(registros)
 
 # ------------------------ SERVIR HTML ------------------------
@@ -70,13 +80,3 @@ def serve_static(path):
 # ------------------------ RUN ------------------------
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
-# Rutas para registrar datos de ósmosis
-@app.route('/registro', methods=['GET', 'POST'])
-def registro():
-    if request.method == 'POST':
-        data = request.get_json()
-        mongo.db.registroOsmosis.insert_one(data)
-        return jsonify({"message": "Registro guardado"}), 201
-    else:  # GET
-        registros = list(mongo.db.registroOsmosis.find({}, {"_id": 0}))
-        return jsonify(registros)
