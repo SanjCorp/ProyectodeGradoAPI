@@ -1,68 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Historial de Ósmosis</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-    h1 { text-align: center; }
-    table { margin: 0 auto; border-collapse: collapse; width: 90%; }
-    td, th { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    button { margin: 10px; padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background-color: #004d99; }
-  </style>
+    <title>Historial Conductividad</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Historial de Ósmosis</h1>
-  <table id="tablaHistorial">
+
+<h1>Historial de Conductividad</h1>
+
+<table border="1">
     <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Código</th>
-        <th>Temp Entrada</th>
-        <th>Temp Salida</th>
-        <th>Cond Entrada</th>
-        <th>Cond Salida</th>
-        <th>Caudal Entrada</th>
-        <th>Caudal Salida</th>
-        <th>Fecha/Hora</th>
-      </tr>
+        <tr><th>Fecha</th><th>Conductividad</th></tr>
     </thead>
-    <tbody></tbody>
-  </table>
-  <br>
-  <button onclick="window.location.href='registro.html'">Registrar Nuevo</button>
-  <button onclick="window.location.href='/'">Volver al inicio</button>
+    <tbody id="tablaHistorial"></tbody>
+</table>
 
-  <script>
-    async function cargarHistorial() {
-      try {
-        const res = await fetch('/registro');
-        const datos = await res.json();
-        const tbody = document.querySelector('#tablaHistorial tbody');
-        tbody.innerHTML = '';
-        datos.forEach(d => {
-          const fila = document.createElement('tr');
-          fila.innerHTML = `
-            <td>${d.usuario}</td>
-            <td>${d.codigo}</td>
-            <td>${d.tempEntrada}</td>
-            <td>${d.tempSalida}</td>
-            <td>${d.condEntrada}</td>
-            <td>${d.condSalida}</td>
-            <td>${d.caudalEntrada}</td>
-            <td>${d.caudalSalida}</td>
-            <td>${new Date(d.timestamp).toLocaleString()}</td>
-          `;
-          tbody.appendChild(fila);
-        });
-      } catch(err) {
-        console.error('Error cargando historial:', err);
-      }
-    }
+<script src="script.js"></script>
+<script>cargarHistorial();</script>
 
-    cargarHistorial();
-  </script>
 </body>
 </html>

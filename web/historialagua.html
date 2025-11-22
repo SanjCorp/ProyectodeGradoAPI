@@ -1,49 +1,25 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historial de Envíos de Agua</title>
-<link rel="stylesheet" href="style.css">
-</head>
+<html>
+<head><meta charset="utf-8"><title>Historial Envios</title><link rel="stylesheet" href="style.css"></head>
 <body>
-<h1>Historial de Envíos de Agua</h1>
-<button onclick="window.location.href='index.html'">Volver al Monitor</button>
-
-<table border="1">
-  <thead>
-    <tr>
-      <th>Fecha/Hora</th>
-      <th>Litros Enviados</th>
-      <th>Operador</th>
-    </tr>
-  </thead>
-  <tbody id="tablaHistorial"></tbody>
-</table>
-
-<script>
-async function cargarHistorialAgua() {
-    try {
-        const res = await fetch('/historial_agua/data');
-        const datos = await res.json();
-        const tbody = document.getElementById('tablaHistorial');
-        tbody.innerHTML = "";
-
-        datos.forEach(d => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${new Date(d.timestamp).toLocaleString()}</td>
-                <td>${d.litros}</td>
-                <td>${d.codigo}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (error) {
-        console.error("Error al cargar historial:", error);
+  <h1>Historial de Envios</h1>
+  <table border="1" width="100%" id="tabla">
+    <thead><tr><th>Timestamp</th><th>Order ID</th><th>Litros</th><th>Device</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    async function load(){
+      const res = await fetch("/historial_agua/data");
+      const data = await res.json();
+      const tbody = document.querySelector("#tabla tbody");
+      tbody.innerHTML = "";
+      data.forEach(r=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.timestamp||""}</td><td>${r.order_id||""}</td><td>${r.litros||""}</td><td>${r.device||""}</td>`;
+        tbody.appendChild(tr);
+      });
     }
-}
-
-cargarHistorialAgua();
-</script>
+    load();
+  </script>
 </body>
 </html>
