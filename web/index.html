@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monitor de Agua</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Agua</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
 </head>
 <body>
-  <h1>Monitor de Envío de Agua</h1>
+<h1>Control de Agua y Ósmosis</h1>
 
-  <div class="contenedor">
-    <label for="flujo">Flujo actual (L/min):</label>
-    <span id="flujo">0</span>
-  </div>
+<section>
+  <h2>Enviar Agua</h2>
+  <input type="number" id="litrosInput" placeholder="Litros a enviar">
+  <input type="text" id="operatorInput" placeholder="Operador">
+  <button onclick="placeOrder()">Enviar</button>
+</section>
 
-  <div class="contenedor">
-    <label for="litros">Cantidad a enviar (L):</label>
-    <input type="number" id="litros" placeholder="Ej: 50">
-  </div>
+<section>
+  <h2>Lecturas en tiempo real</h2>
+  <p>Conductividad: <span id="ec">--</span> µS/cm</p>
+  <p>Litros acumulados: <span id="flujo">--</span></p>
+  <p>Nivel 1: <span id="nivel1">--</span></p>
+  <p>Nivel 2: <span id="nivel2">--</span></p>
+  <p>Nivel 3: <span id="nivel3">--</span></p>
+</section>
 
-  <div class="contenedor">
-    <label for="codigo">Código de operador:</label>
-    <input type="text" id="codigo" placeholder="Ej: OP01">
-  </div>
+<section>
+  <h2>Gráfica de Conductividad</h2>
+  <canvas id="chart" width="600" height="300"></canvas>
+</section>
 
-  <button id="btnEnviar">Enviar Agua</button>
-  <button onclick="window.location.href='historialagua.html'">Ver Historial de Envíos</button>
-
-  <script src="script.js"></script>
 </body>
 </html>

@@ -11,9 +11,9 @@ CORS(app)
 app.config["MONGO_URI"] = "mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/contadorDB?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
-# ------------------------ RUTAS API EXISTENTES ------------------------
+# ------------------------ RUTAS API ------------------------
 
-# --- Datos de sensores / envío de agua base ---
+# Datos de sensores / envío de agua
 @app.route('/data', methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
@@ -22,11 +22,10 @@ def data():
         mongo.db.contador.insert_one(data)
         return jsonify({"message": "Dato recibido"}), 201
     else:
-        # devolver últimos 200 datos (o todos si quieres)
         datos = list(mongo.db.contador.find({}, {"_id": 0}).sort("timestamp", -1).limit(200))
         return jsonify(datos)
 
-# --- Registro de ósmosis (mantiene tus lotes y códigos) ---
+# Registro de ósmosis
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
@@ -45,7 +44,7 @@ def registro():
         registros = list(mongo.db.registros.find({}, {"_id": 0}))
         return jsonify(registros)
 
-# --- Nuevo registro dedicado solo a ósmosis (histórico técnico) ---
+# Registro de ósmosis técnico
 @app.route('/registro_osmosis', methods=['GET', 'POST'])
 def registro_osmosis():
     if request.method == 'POST':
@@ -57,19 +56,16 @@ def registro_osmosis():
         registros = list(mongo.db.registroOsmosis.find({}, {"_id": 0}))
         return jsonify(registros)
 
-# ------------------------ PEDIDOS / ENVIOS ------------------------
-
-# Crear una orden de envío (desde la web)
+# Crear orden de envío de agua
 @app.route('/place_order', methods=['POST'])
 def place_order():
     data = request.get_json()
-    # data expected: { "litros": 0.5, "operator": "nombre" }
     data['status'] = 'pending'
     data['timestamp'] = datetime.utcnow().isoformat()
     result = mongo.db.orders.insert_one(data)
     return jsonify({"message": "Orden creada", "id": str(result.inserted_id)}), 201
 
-# ESP32 pide próxima orden pendiente -> devuelve la primera orden pending y la marca processing
+# ESP32 pide próxima orden pendiente
 @app.route('/enviar', methods=['GET'])
 def enviar():
     order = mongo.db.orders.find_one_and_update(
@@ -80,37 +76,36 @@ def enviar():
     )
     if not order:
         return jsonify({"litros": 0}), 200
-    # devolver solo campos necesarios
     return jsonify({
         "id": str(order["_id"]),
         "litros": float(order.get("litros", 0)),
         "operator": order.get("operator", "maqueta")
     }), 200
 
-# Cuando ESP32 finaliza un envío, reporta a este endpoint
+# ESP32 reporta fin de envío
 @app.route('/enviar_agua', methods=['POST'])
 def enviar_agua():
     datos = request.get_json()
-    # Esperamos: { "order_id": "...", "litros": 0.5, "start": "...", "end": "...", "device": "ESP32" }
     datos['timestamp'] = datetime.utcnow().isoformat()
     mongo.db.historialEnvios.insert_one(datos)
-    # marcar orden como done si vino order_id
     order_id = datos.get("order_id")
     if order_id:
         try:
-            mongo.db.orders.update_one({"_id": ObjectId(order_id)}, {"$set": {"status": "done", "completed_at": datetime.utcnow().isoformat()}})
+            mongo.db.orders.update_one(
+                {"_id": ObjectId(order_id)},
+                {"$set": {"status": "done", "completed_at": datetime.utcnow().isoformat()}}
+            )
         except:
             pass
     return jsonify({"message": "Envío de agua registrado correctamente"}), 201
 
-# Obtener historial de envíos de agua
+# Historial de envíos
 @app.route('/historial_agua/data', methods=['GET'])
 def historial_agua_data():
     registros = list(mongo.db.historialEnvios.find({}, {"_id": 0}).sort("timestamp", -1).limit(200))
     return jsonify(registros)
 
 # ------------------------ SERVIR HTML ------------------------
-
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
