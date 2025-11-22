@@ -1,104 +1,58 @@
-const API_BASE = ""; // mismo origen
+const API = ""; // Si sirve desde el mismo Flask, deja vacío
 
-// Enviar orden preset
-async function sendPreset(tipo) {
-  let litros = 0;
-  if(tipo === "preparar") litros = 5000;
-  else if(tipo === "aforar") litros = 2000;
-  else if(tipo === "cip") litros = 450;
-  else {
-    // Otro
-    const input = document.getElementById("litrosOtro");
-    litros = parseFloat(input.value);
-    if(isNaN(litros) || litros <= 0){
-      alert("Ingresa un valor válido para 'Otro'");
-      return;
-    }
-  }
+let motorStatus = document.getElementById("motorStatus");
+let litrosDisp = document.getElementById("litrosDispensados");
+let ecSpan = document.getElementById("ecValue");
 
-  const payload = { litros: litros, operator: "web", tipo: tipo };
-  const res = await fetch(API_BASE + "/place_order", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
-  const data = await res.json();
-  alert("Orden creada: " + data.id);
-  document.getElementById("litrosOtro").style.display = "none";
-}
-
-// Mostrar input si es "Otro"
-document.querySelector("button[onclick=\"sendPreset('otro')\"]").addEventListener("click", ()=>{
-  document.getElementById("litrosOtro").style.display = "inline-block";
+// --- Gráfica EC ---
+let ctx = document.getElementById("graficaEC").getContext("2d");
+let chartEC = new Chart(ctx, {
+  type:"line",
+  data:{labels:[], datasets:[{label:"EC (µS/cm)", data:[], borderColor:"blue", fill:false}]}
 });
 
-// Consultar datos en tiempo real (litros y motor)
-async function fetchRealTime() {
+// --- Obtener últimos datos y refrescar ---
+async function fetchData() {
   try {
-    const res = await fetch(API_BASE + "/enviar");
-    const data = await res.json();
-    const litros = data.litros || 0;
-    const motor = litros > 0 ? "ON" : "OFF";
+    let res = await fetch(API+"/data");
+    let arr = await res.json();
+    if(arr.length){
+      let latest = arr[0];
+      ecSpan.innerText = latest.ec || "--";
+      litrosDisp.innerText = latest.litros || 0;
+      motorStatus.innerText = latest.motor?"ON":"OFF";
 
-    document.getElementById("motorStatus").innerText = motor;
-    document.getElementById("litrosDispensados").innerText = litros.toFixed(2);
-
-  } catch(e) {
-    console.error("Error fetchRealTime", e);
-  }
-  setTimeout(fetchRealTime, 2000); // cada 2 segundos
-}
-fetchRealTime();
-
-// Mostrar histórico EC por hora
-async function fetchECData() {
-  try {
-    const res = await fetch(API_BASE + "/data");
-    const datos = await res.json();
-
-    // Filtrar solo los que tengan EC
-    const filtrados = datos.filter(d => d.ec !== undefined && d.timestamp);
-
-    // Agrupar por hora
-    const agrupado = {};
-    filtrados.forEach(d => {
-      const fecha = new Date(d.timestamp);
-      const hora = fecha.toISOString().slice(0,13);
-      if(!agrupado[hora]) agrupado[hora] = [];
-      agrupado[hora].push(d.ec);
-    });
-
-    const labels = Object.keys(agrupado).sort();
-    const valores = labels.map(h => {
-      const arr = agrupado[h];
-      return arr.reduce((a,b)=>a+b,0)/arr.length;
-    });
-
-    const ctx = document.getElementById("graficaEC").getContext("2d");
-    if(window.ecChart) window.ecChart.destroy();
-    window.ecChart = new Chart(ctx, {
-      type:"line",
-      data: {
-        labels: labels.map(h=>h.replace("T"," ")),
-        datasets:[{
-          label:"Conductividad promedio (µS/cm)",
-          data: valores,
-          borderColor: "#0066cc",
-          fill:false,
-          tension:0.2
-        }]
-      },
-      options: {
-        scales:{
-          x:{ title:{ display:true, text:"Hora" } },
-          y:{ title:{ display:true, text:"µS/cm" }, beginAtZero:true }
-        }
+      // Gráfica
+      chartEC.data.labels.push(new Date(latest.timestamp).toLocaleTimeString());
+      chartEC.data.datasets[0].data.push(latest.ec || 0);
+      if(chartEC.data.labels.length>30){
+        chartEC.data.labels.shift();
+        chartEC.data.datasets[0].data.shift();
       }
-    });
-
-  } catch(e){
-    console.error("Error fetchECData", e);
-  }
-  setTimeout(fetchECData, 5000); // cada 5 segundos
+      chartEC.update();
+    }
+  } catch(e){ console.error("Error fetchData", e); }
 }
-fetchECData();
+setInterval(fetchData, 2000);
+
+// --- Enviar orden predefinida ---
+async function sendPreset(tipo){
+  let litros;
+  if(tipo==="preparar") litros=5000;
+  else if(tipo==="aforar") litros=2000;
+  else if(tipo==="cip") litros=450;
+  else{
+    litros = parseFloat(document.getElementById("litrosOtro").value);
+    if(!litros) return alert("Ingresa litros válidos");
+  }
+
+  try{
+    let res = await fetch(API+"/place_order",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({litros:litros,operator:"web"})
+    });
+    let data = await res.json();
+    alert("Orden enviada: "+data.id);
+  } catch(e){ alert("Error enviando orden") }
+}

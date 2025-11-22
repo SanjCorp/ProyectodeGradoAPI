@@ -1,29 +1,35 @@
-<button onclick="sendPreset('preparar')">Preparar (5000 L)</button>
-<button onclick="sendPreset('aforar')">Aforar (2000 L)</button>
-<button onclick="sendPreset('cip')">CIP (450 L)</button>
-<button onclick="sendPreset('otro')">Otro</button>
-<input type="number" id="litrosOtro" placeholder="Litros" style="display:none; margin-top:5px;">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Control de Agua</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header><h1>Control de Ósmosis y Agua</h1></header>
 
-<script>
-const API = "";
+<section class="status">
+  <h2>Estado en tiempo real</h2>
+  <p>Motor: <span id="motorStatus">OFF</span></p>
+  <p>Litros dispensados: <span id="litrosDispensados">0</span> L</p>
+  <p>Conductividad EC: <span id="ecValue">--</span> µS/cm</p>
+</section>
 
-function sendPreset(tipo) {
-  let litros = 0;
-  if (tipo === 'preparar') litros = 5000;
-  else if (tipo === 'aforar') litros = 2000;
-  else if (tipo === 'cip') litros = 450;
-  else {
-    litros = parseFloat(prompt("Ingrese litros a enviar:"));
-    if (!litros || litros <= 0) return;
-  }
+<section class="control">
+  <h2>Preparar Agua</h2>
+  <button onclick="sendPreset('preparar')">Preparar (5000 L)</button>
+  <button onclick="sendPreset('aforar')">Aforar (2000 L)</button>
+  <button onclick="sendPreset('cip')">CIP (450 L)</button>
+  <button onclick="sendPreset('otro')">Otro</button>
+  <input type="number" id="litrosOtro" placeholder="Litros" style="display:none; margin-top:5px;">
+</section>
 
-  fetch(API + "/place_order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ litros: litros, operator: "web" })
-  })
-  .then(res => res.json())
-  .then(data => alert("Orden creada: " + data.id))
-  .catch(e => console.error(e));
-}
-</script>
+<section class="grafica">
+  <h2>Histórico de Conductividad (por hora)</h2>
+  <canvas id="graficaEC"></canvas>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
