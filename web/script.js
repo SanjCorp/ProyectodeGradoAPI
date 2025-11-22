@@ -1,46 +1,43 @@
-const API = ""; // Si es mismo origen
-
-async function sendPreset(type) {
+async function sendPreset(tipo) {
   let litros = 0;
-  if (type === "preparar") litros = 5000;
-  else if (type === "aforar") litros = 2000;
-  else if (type === "cip") litros = 450;
+  if(tipo === "preparar") litros = 5000;
+  else if(tipo === "aforar") litros = 2000;
+  else if(tipo === "cip") litros = 450;
   else {
-    litros = parseFloat(document.getElementById("litrosOtro").value);
-    if (!litros || litros <= 0) {
-      alert("Ingresa litros válidos");
+    litros = parseFloat(document.getElementById('litrosOtro').value);
+    if(isNaN(litros) || litros <= 0){
+      alert("Ingrese un valor válido");
       return;
     }
   }
 
-  const operator = "usuario";
-
-  const res = await fetch(API + "/place_order", {
+  const data = { litros };
+  await fetch("/place_order", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ litros, operator })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
   });
-
-  const data = await res.json();
-  alert("Orden creada: " + data.id);
-  document.getElementById("litrosOtro").style.display = type === "otro" ? "block" : "none";
+  alert("Orden enviada: " + litros + " L");
 }
 
-// Función para actualizar EC y litros
-async function fetchLatestData() {
+document.getElementById('litrosOtro').style.display = "none";
+document.querySelector('button[onclick="sendPreset(\'otro\')"]').addEventListener('click',()=>{
+  document.getElementById('litrosOtro').style.display = "block";
+});
+
+// Actualizar datos en tiempo real
+async function actualizarEstado() {
   try {
-    const res = await fetch(API + "/data");
+    const res = await fetch('/data');
     const datos = await res.json();
-    if (datos.length > 0) {
-      const latest = datos[0];
-      document.getElementById("ecValue").innerText = latest.ec || "--";
-      document.getElementById("litrosDispensados").innerText = latest.litros || 0;
-      document.getElementById("motorStatus").innerText = latest.motor ? "ON" : "OFF";
-    }
-  } catch(e) {
-    console.error(e);
+    if(!datos) return;
+
+    document.getElementById('litrosDispensados').textContent = datos.flujo.toFixed(2);
+    document.getElementById('ecValue').textContent = datos.ec.toFixed(2);
+    document.getElementById('motorStatus').textContent = datos.flujo > 0 ? "ON" : "OFF";
+  } catch(e){
+    console.error("Error actualizando estado:", e);
   }
 }
 
-setInterval(fetchLatestData, 3000);
-fetchLatestData();
+setInterval(actualizarEstado, 1000);
