@@ -1,59 +1,104 @@
-const API = ""; // mismo origen
+const API = ""; // Si usas mismo origen, deja vacío, si remoto pon URL completa
 
-// Gráfica EC
-let ctx = document.getElementById("chart")?.getContext("2d");
-let chart;
-if (ctx) {
-  chart = new Chart(ctx, {
-    type: "line",
-    data: { labels: [], datasets: [{ label: "Conductividad (uS/cm)", data: [], fill: false, borderColor: "rgb(75,192,192)" }] }
-  });
-}
+let motorRunning = false;
+let litros = 0;
+let chartEC;
 
-// Actualizar datos en tiempo real
-async function fetchLatestData() {
+async function fetchRealtime() {
   try {
     const res = await fetch(API + "/data");
-    const arr = await res.json();
-    const latest = Array.isArray(arr) && arr.length ? arr[0] : null;
-    if (latest) {
-      document.getElementById("ec").innerText = latest.ec || "--";
-      document.getElementById("flujo").innerText = latest.litros_acumulados || (latest.flujo || "--");
-      document.getElementById("nivel1").innerText = latest.nivel1 ? "Lleno" : "Vacío";
-      document.getElementById("nivel2").innerText = latest.nivel2 ? "Lleno" : "Vacío";
-      document.getElementById("nivel3").innerText = latest.nivel3 ? "Lleno" : "Vacío";
+    const datos = await res.json();
+    if (!Array.isArray(datos) || !datos.length) return;
 
-      if (chart) {
-        chart.data.labels.push("");
-        chart.data.datasets[0].data.push(latest.ec || 0);
-        if (chart.data.labels.length > 30) {
-          chart.data.labels.shift();
-          chart.data.datasets[0].data.shift();
-        }
-        chart.update();
-      }
-    }
-  } catch (e) { console.log("Error fetchLatestData", e); }
+    const latest = datos[0]; // El dato más reciente
+    litros = latest.litros_acumulados || 0;
+    motorRunning = latest.motor || false;
+
+    document.getElementById("litrosDispensados").innerText = litros.toFixed(2);
+    document.getElementById("motorStatus").innerText = motorRunning ? "ON" : "OFF";
+    document.getElementById("ecValue").innerText = latest.ec ? latest.ec.toFixed(1) : "--";
+
+  } catch (e) {
+    console.error("Error fetchRealtime", e);
+  }
 }
 
-// Crear orden de envío
+// --- Gráfico EC ---
+async function cargarEC() {
+  try {
+    const res = await fetch(API + "/data");
+    const datos = await res.json();
+
+    // Agrupar por hora
+    const agrupado = {};
+    datos.forEach(d => {
+      if (d.ec && d.timestamp) {
+        const hora = new Date(d.timestamp).toISOString().slice(0,13);
+        if (!agrupado[hora]) agrupado[hora] = [];
+        agrupado[hora].push(d.ec);
+      }
+    });
+
+    const labels = Object.keys(agrupado).sort();
+    const valores = labels.map(h => {
+      const arr = agrupado[h];
+      return arr.reduce((a,b)=>a+b,0)/arr.length;
+    });
+
+    const ctx = document.getElementById('graficaEC').getContext('2d');
+    if (chartEC) chartEC.destroy();
+
+    chartEC = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels.map(l=>l.replace("T"," ")),
+        datasets: [{
+          label: 'EC promedio (µS/cm)',
+          data: valores,
+          borderColor: '#0066cc',
+          fill: false,
+          tension: 0.2
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display:true, text:"Hora" } },
+          y: { title: { display:true, text:"µS/cm" }, beginAtZero:true }
+        }
+      }
+    });
+
+  } catch(e) {
+    console.error("Error cargarEC", e);
+  }
+}
+
+// --- Crear orden de agua ---
 async function placeOrder() {
   const litros = parseFloat(document.getElementById("litrosInput").value);
   const operator = document.getElementById("operatorInput").value || "operator";
-  if (!litros || litros <= 0) { alert("Ingresa litros válidos"); return; }
+
+  if (!litros || litros <= 0) {
+    alert("Ingresa litros válidos");
+    return;
+  }
 
   try {
     const res = await fetch(API + "/place_order", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ litros, operator })
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({litros, operator})
     });
     const data = await res.json();
     alert("Orden creada: " + (data.id || ""));
     document.getElementById("litrosInput").value = "";
-  } catch (e) { alert("Error creando orden"); }
+  } catch(e) {
+    alert("Error creando orden");
+  }
 }
 
-// auto-refresh
-setInterval(fetchLatestData, 3000);
-fetchLatestData();
+// --- Auto-refresh ---
+setInterval(fetchRealtime, 1000);
+setInterval(cargarEC, 60000); // actualizar EC cada minuto
+fetchRealtime();
+cargarEC();

@@ -2,41 +2,34 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de Agua y Ósmosis</title>
+<title>Control de Agua</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js"></script>
 </head>
 <body>
-<header>
-  <h1>Control de Agua y Ósmosis</h1>
-</header>
+  <header>
+    <h1>Control de Ósmosis y Agua</h1>
+  </header>
 
-<main>
-  <!-- Sección de órdenes de agua -->
-  <section class="card">
-    <h2>Enviar Agua</h2>
-    <input type="number" id="litrosInput" placeholder="Litros a enviar" min="0.1" step="0.1">
+  <section class="status">
+    <h2>Estado en tiempo real</h2>
+    <p>Motor: <span id="motorStatus">OFF</span></p>
+    <p>Litros dispensados: <span id="litrosDispensados">0</span> L</p>
+    <p>Conductividad EC: <span id="ecValue">--</span> µS/cm</p>
+  </section>
+
+  <section class="control">
+    <h2>Enviar Orden de Agua</h2>
+    <input type="number" id="litrosInput" placeholder="Litros a enviar" step="0.1">
     <input type="text" id="operatorInput" placeholder="Operador">
-    <button onclick="placeOrder()">Crear Orden</button>
+    <button onclick="placeOrder()">Enviar</button>
   </section>
 
-  <!-- Estado en tiempo real del sistema -->
-  <section class="card">
-    <h2>Estado en Tiempo Real</h2>
-    <p>Conductividad (EC): <span id="ec">--</span> µS/cm</p>
-    <p>Litros enviados: <span id="flujo">--</span></p>
-    <p>Nivel 1: <span id="nivel1">--</span></p>
-    <p>Nivel 2: <span id="nivel2">--</span></p>
-    <p>Nivel 3: <span id="nivel3">--</span></p>
+  <section class="grafica">
+    <h2>Histórico de Conductividad (por hora)</h2>
+    <canvas id="graficaEC"></canvas>
   </section>
 
-  <!-- Gráfica de conductividad -->
-  <section class="card">
-    <h2>Gráfica de Conductividad</h2>
-    <canvas id="chart" width="600" height="300"></canvas>
-  </section>
-</main>
+<script src="script.js"></script>
 </body>
 </html>
