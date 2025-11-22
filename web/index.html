@@ -7,30 +7,30 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<header>
-  <h1>Control de Ósmosis y Agua</h1>
-</header>
+  <header>
+    <h1>Control de Ósmosis y Agua</h1>
+  </header>
 
-<section class="status">
-  <h2>Estado en tiempo real</h2>
-  <p>Motor: <span id="motorStatus">OFF</span></p>
-  <p>Litros dispensados: <span id="litrosDispensados">0</span> L</p>
-  <p>Conductividad EC: <span id="ecValue">--</span> µS/cm</p>
-</section>
+  <section class="status">
+    <h2>Estado en tiempo real</h2>
+    <p>Motor: <span id="motorStatus">OFF</span></p>
+    <p>Litros dispensados: <span id="litrosDispensados">0</span> L</p>
+    <p>Conductividad EC: <span id="ecValue">--</span> µS/cm</p>
+  </section>
 
-<section class="control">
-  <h2>Preparar Agua</h2>
-  <button onclick="sendPreset('preparar')">Preparar (5000 L)</button>
-  <button onclick="sendPreset('aforar')">Aforar (2000 L)</button>
-  <button onclick="sendPreset('cip')">CIP (450 L)</button>
-  <button onclick="sendPreset('otro')">Otro</button>
-  <input type="number" id="litrosOtro" placeholder="Litros" style="display:none; margin-top:5px;">
-</section>
+  <section class="control">
+    <h2>Preparar Agua</h2>
+    <button onclick="sendPreset('preparar')">Preparar (5000 L)</button>
+    <button onclick="sendPreset('aforar')">Aforar (2000 L)</button>
+    <button onclick="sendPreset('cip')">CIP (450 L)</button>
+    <button onclick="sendPreset('otro')">Otro</button>
+    <input type="number" id="litrosOtro" placeholder="Litros" style="display:none; margin-top:5px;">
+  </section>
 
-<section class="grafica">
-  <h2>Histórico de Conductividad (por hora)</h2>
-  <canvas id="graficaEC"></canvas>
-</section>
+  <section class="grafica">
+    <h2>Histórico de Conductividad (por hora)</h2>
+    <canvas id="graficaEC"></canvas>
+  </section>
 
 <script src="script.js"></script>
 </body>

@@ -25,7 +25,7 @@ def data():
         datos = list(mongo.db.contador.find({}, {"_id": 0}).sort("timestamp", -1).limit(200))
         return jsonify(datos)
 
-# Crear orden de agua desde web
+# Crear orden de agua
 @app.route('/place_order', methods=['POST'])
 def place_order():
     data = request.get_json()
@@ -68,13 +68,7 @@ def enviar_agua():
             pass
     return jsonify({"message": "Envío de agua registrado correctamente"}), 201
 
-# Historial de envíos
-@app.route('/historial_agua/data', methods=['GET'])
-def historial_agua_data():
-    registros = list(mongo.db.historialEnvios.find({}, {"_id": 0}).sort("timestamp", -1).limit(200))
-    return jsonify(registros)
-
-# ------------------------ SERVIR HTML ------------------------
+# Servir HTML
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
