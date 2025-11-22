@@ -1,24 +1,24 @@
-const API = ""; // Si usas mismo origen, deja vacío, si remoto pon URL completa
+const API = ""; // Misma URL si es el mismo origen
 
 let motorRunning = false;
 let litros = 0;
 let chartEC;
 
+// --- Mostrar datos en tiempo real ---
 async function fetchRealtime() {
   try {
     const res = await fetch(API + "/data");
     const datos = await res.json();
     if (!Array.isArray(datos) || !datos.length) return;
 
-    const latest = datos[0]; // El dato más reciente
+    const latest = datos[0];
     litros = latest.litros_acumulados || 0;
     motorRunning = latest.motor || false;
 
     document.getElementById("litrosDispensados").innerText = litros.toFixed(2);
     document.getElementById("motorStatus").innerText = motorRunning ? "ON" : "OFF";
     document.getElementById("ecValue").innerText = latest.ec ? latest.ec.toFixed(1) : "--";
-
-  } catch (e) {
+  } catch(e) {
     console.error("Error fetchRealtime", e);
   }
 }
@@ -29,7 +29,6 @@ async function cargarEC() {
     const res = await fetch(API + "/data");
     const datos = await res.json();
 
-    // Agrupar por hora
     const agrupado = {};
     datos.forEach(d => {
       if (d.ec && d.timestamp) {
@@ -67,19 +66,29 @@ async function cargarEC() {
         }
       }
     });
-
   } catch(e) {
     console.error("Error cargarEC", e);
   }
 }
 
-// --- Crear orden de agua ---
-async function placeOrder() {
-  const litros = parseFloat(document.getElementById("litrosInput").value);
-  const operator = document.getElementById("operatorInput").value || "operator";
+// --- Enviar orden predeterminada ---
+async function sendPreset(tipo) {
+  let litrosEnviar = 0;
 
-  if (!litros || litros <= 0) {
-    alert("Ingresa litros válidos");
+  if (tipo === "preparar") litrosEnviar = 5000;
+  else if (tipo === "aforar") litrosEnviar = 2000;
+  else if (tipo === "cip") litrosEnviar = 450;
+  else if (tipo === "otro") {
+    document.getElementById("litrosOtro").style.display = "inline-block";
+    litrosEnviar = parseFloat(document.getElementById("litrosOtro").value);
+    if (!litrosEnviar || litrosEnviar <= 0) {
+      alert("Ingresa litros válidos en 'Otro'");
+      return;
+    }
+  }
+
+  if (motorRunning) {
+    alert("Motor actualmente activo, espera a que termine la orden.");
     return;
   }
 
@@ -87,18 +96,17 @@ async function placeOrder() {
     const res = await fetch(API + "/place_order", {
       method:"POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({litros, operator})
+      body: JSON.stringify({ litros: litrosEnviar, operator: "web" })
     });
     const data = await res.json();
-    alert("Orden creada: " + (data.id || ""));
-    document.getElementById("litrosInput").value = "";
+    alert("Orden enviada: " + (data.id || ""));
   } catch(e) {
-    alert("Error creando orden");
+    alert("Error enviando orden al servidor");
   }
 }
 
 // --- Auto-refresh ---
 setInterval(fetchRealtime, 1000);
-setInterval(cargarEC, 60000); // actualizar EC cada minuto
+setInterval(cargarEC, 60000);
 fetchRealtime();
 cargarEC();

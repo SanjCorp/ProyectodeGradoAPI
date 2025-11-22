@@ -2,20 +2,59 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor EC</title>
+<title>Monitor de Ósmosis</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="monitor.js"></script>
 </head>
 <body>
-<header>
-  <h1>Monitor de Conductividad</h1>
-</header>
-<main>
-<section class="card">
-  <canvas id="grafica" width="800" height="400"></canvas>
-</section>
-</main>
+  <header>
+    <h1>Monitor de Ósmosis y Agua</h1>
+  </header>
+
+  <section class="status">
+    <h2>Estado en tiempo real</h2>
+    <p>Motor: <span id="motorStatus">OFF</span></p>
+    <p>Litros dispensados: <span id="litrosDispensados">0</span> L</p>
+    <p>Conductividad EC: <span id="ecValue">--</span> µS/cm</p>
+  </section>
+
+  <section class="ordenes">
+    <h2>Órdenes pendientes</h2>
+    <table id="ordenesTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Litros</th>
+          <th>Estado</th>
+          <th>Operador</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="historial">
+    <h2>Historial de envíos</h2>
+    <table id="historialTable">
+      <thead>
+        <tr>
+          <th>ID Orden</th>
+          <th>Litros enviados</th>
+          <th>Device</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="grafica">
+    <h2>Gráfica de Conductividad (EC)</h2>
+    <canvas id="graficaEC"></canvas>
+  </section>
+
+<script src="monitor.js"></script>
 </body>
 </html>

@@ -19,10 +19,12 @@
   </section>
 
   <section class="control">
-    <h2>Enviar Orden de Agua</h2>
-    <input type="number" id="litrosInput" placeholder="Litros a enviar" step="0.1">
-    <input type="text" id="operatorInput" placeholder="Operador">
-    <button onclick="placeOrder()">Enviar</button>
+    <h2>Preparar Agua</h2>
+    <button onclick="sendPreset('preparar')">Preparar (5000 L)</button>
+    <button onclick="sendPreset('aforar')">Aforar (2000 L)</button>
+    <button onclick="sendPreset('cip')">CIP (450 L)</button>
+    <button onclick="sendPreset('otro')">Otro</button>
+    <input type="number" id="litrosOtro" placeholder="Litros" style="display:none; margin-top:5px;">
   </section>
 
   <section class="grafica">
