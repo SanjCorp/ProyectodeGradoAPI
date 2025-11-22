@@ -15,7 +15,7 @@ async function cargarDatos() {
     const labels = Object.keys(agrupado).sort();
     const valores = labels.map(h => {
       const arr = agrupado[h];
-      return arr.reduce((a, b) => a + b, 0) / arr.length;
+      return arr.reduce((a,b)=>a+b,0)/arr.length;
     });
 
     const ctx = document.getElementById('grafica').getContext('2d');
@@ -23,17 +23,11 @@ async function cargarDatos() {
     window.chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels.map(h => h.replace("T", " ")),
-        datasets: [{ label: 'Conductividad promedio (µS/cm)', data: valores, borderColor: '#0066cc', fill: false, tension: 0.2 }]
+        labels: labels.map(h => h.replace("T"," ")),
+        datasets: [{ label: 'EC promedio (µS/cm)', data: valores, borderColor: '#0066cc', fill: false, tension: 0.2 }]
       },
-      options: {
-        scales: {
-          x: { title: { display: true, text: "Hora" } },
-          y: { title: { display: true, text: "µS/cm" }, beginAtZero: true }
-        }
-      }
+      options: { scales: { x: { title: { display:true,text:"Hora" } }, y: { title:{display:true,text:"µS/cm"}, beginAtZero:true } } }
     });
-
   } catch (error) { console.error('Error cargando datos:', error); }
 }
 

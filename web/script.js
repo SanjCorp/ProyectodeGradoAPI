@@ -1,4 +1,4 @@
-const API = "" // mismo origen si usas Flask
+const API = ""; // mismo origen
 
 // Gráfica EC
 let ctx = document.getElementById("chart")?.getContext("2d");
@@ -10,6 +10,7 @@ if (ctx) {
   });
 }
 
+// Actualizar datos en tiempo real
 async function fetchLatestData() {
   try {
     const res = await fetch(API + "/data");
@@ -39,7 +40,6 @@ async function fetchLatestData() {
 async function placeOrder() {
   const litros = parseFloat(document.getElementById("litrosInput").value);
   const operator = document.getElementById("operatorInput").value || "operator";
-
   if (!litros || litros <= 0) { alert("Ingresa litros válidos"); return; }
 
   try {

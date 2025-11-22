@@ -11,9 +11,9 @@ CORS(app)
 app.config["MONGO_URI"] = "mongodb+srv://RicardoSanjines:RicardoSanjines@cluster0.rhtbcma.mongodb.net/contadorDB?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
-# ------------------------ RUTAS API ------------------------
+# ------------------------ ENDPOINTS ------------------------
 
-# Datos de sensores / envío de agua
+# Datos sensores y EC
 @app.route('/data', methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
@@ -44,7 +44,7 @@ def registro():
         registros = list(mongo.db.registros.find({}, {"_id": 0}))
         return jsonify(registros)
 
-# Registro de ósmosis técnico
+# Registro técnico de ósmosis
 @app.route('/registro_osmosis', methods=['GET', 'POST'])
 def registro_osmosis():
     if request.method == 'POST':
@@ -56,7 +56,7 @@ def registro_osmosis():
         registros = list(mongo.db.registroOsmosis.find({}, {"_id": 0}))
         return jsonify(registros)
 
-# Crear orden de envío de agua
+# Crear orden de agua
 @app.route('/place_order', methods=['POST'])
 def place_order():
     data = request.get_json()
@@ -65,7 +65,7 @@ def place_order():
     result = mongo.db.orders.insert_one(data)
     return jsonify({"message": "Orden creada", "id": str(result.inserted_id)}), 201
 
-# ESP32 pide próxima orden pendiente
+# ESP32 solicita próxima orden pendiente
 @app.route('/enviar', methods=['GET'])
 def enviar():
     order = mongo.db.orders.find_one_and_update(
@@ -82,7 +82,7 @@ def enviar():
         "operator": order.get("operator", "maqueta")
     }), 200
 
-# ESP32 reporta fin de envío
+# ESP32 reporta envío completado
 @app.route('/enviar_agua', methods=['POST'])
 def enviar_agua():
     datos = request.get_json()
@@ -125,6 +125,10 @@ def serve_historial():
 @app.route('/historial_agua')
 def serve_historial_agua():
     return send_from_directory(app.static_folder, "historialagua.html")
+
+@app.route('/machines')
+def serve_machines():
+    return send_from_directory(app.static_folder, "machines.html")
 
 @app.route('/<path:path>')
 def serve_static(path):
